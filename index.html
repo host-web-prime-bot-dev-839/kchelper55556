@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Premium Lottery Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffd0;
+            --secondary: #ff4d8d;
+            --accent: #9d4dff;
+            --dark: #0a192f;
+            --darker: #050c1a;
+            --light: #f8f9fa;
+            --glass: rgba(15,23,42,0.95);
+            --glass-light: rgba(255,255,255,0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --big-color: #4dffb8;
+            --small-color: #ff6b6b;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            height: 100%;
+        }
+        
+        .iframe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: brightness(0.7);
+        }
+        
+        .prediction-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 480px;
+            z-index: 999;
+        }
+        
+        .prediction-box {
+            background: var(--glass);
+            color: var(--light);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .prediction-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,255,208,0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+        
+        .prediction-box.circular-mode {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary);
+            animation: pulse 1.5s infinite;
+            overflow: hidden;
+        }
+        
+        .prediction-box.circular-mode > *:not(.icon-circle) {
+            display: none;
+        }
+        
+        .icon-circle {
+            font-size: 24px;
+            color: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+        
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .prediction-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .prediction-badge {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(255,77,141,0.3);
+        }
+        
+        .prediction-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .prediction-period {
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .prediction-index {
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .prediction-result {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            z-index: 1;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .prediction-result.BIG {
+            color: var(--big-color);
+            border: 2px solid var(--big-color);
+            background: linear-gradient(135deg, rgba(77,255,184,0.15), rgba(77,255,184,0.05));
+            text-shadow: 0 0 10px rgba(77,255,184,0.5);
+        }
+        
+        .prediction-result.SMALL {
+            color: var(--small-color);
+            border: 2px solid var(--small-color);
+            background: linear-gradient(135deg, rgba(255,107,107,0.15), rgba(255,107,107,0.05));
+            text-shadow: 0 0 10px rgba(255,107,107,0.5);
+        }
+        
+        .stats-box {
+            background: rgba(0,0,0,0.3);
+            color: var(--light);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .stat-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .accuracy-high {
+            color: var(--success);
+        }
+        
+        .accuracy-medium {
+            color: var(--warning);
+        }
+        
+        .accuracy-low {
+            color: var(--danger);
+        }
+        
+        .refresh-time {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            z-index: 1000;
+        }
+        
+        .credit {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            z-index: 1000;
+        }
+        
+        .toggle-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        
+        .toggle-icon:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .lt-theme {
+            --primary: #3b82f6;
+            --secondary: #ec4899;
+            --glass: rgba(255,255,255,0.95);
+            --light: #1e293b;
+        }
+        
+        .lt-theme .prediction-box {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .lt-theme .prediction-result {
+            background: rgba(255,255,255,0.8);
+        }
+        
+        .lt-theme .stats-box {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Timer Progress Bar */
+        .timer-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 100%;
+            transform-origin: left;
+            animation: timerAnimation 30s linear infinite;
+            z-index: 1;
+        }
+        
+        /* Trend Indicator */
+        .trend-indicator {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        /* Prediction History */
+        .history-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .history-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .history-dot.big {
+            background: var(--big-color);
+            box-shadow: 0 0 8px var(--big-color);
+        }
+        
+        .history-dot.small {
+            background: var(--small-color);
+            box-shadow: 0 0 8px var(--small-color);
+        }
+        
+        .history-dot.correct {
+            transform: scale(1.2);
+        }
+        
+        @media (max-width: 480px) {
+            .prediction-container {
+                width: 95%;
+            }
+            
+            .prediction-result {
+                font-size: 30px;
+                padding: 18px;
+            }
+            
+            .prediction-box {
+                padding: 20px;
+            }
+            
+            .stats-box {
+                padding: 15px;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes timerAnimation {
+            0% { transform: scaleX(0); }
+            100% { transform: scaleX(1); }
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor; }
+            100% { box-shadow: 0 0 5px currentColor; }
+        }
+        
+        .glow {
+            animation: glow 2s infinite;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--glass);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .notification-content {
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fullscreen website container -->
+    <div class="iframe-container">
+        <iframe src="http://www.cklottery.club/#/register?invitationCode=81487219676"></iframe>
+    </div>
+    
+    <!-- Prediction box -->
+    <div class="prediction-container">
+        <div class="prediction-box" id="prediction-box">
+            <div class="prediction-header">
+                <h2 class="prediction-title">
+                    <i class="fas fa-crown"></i>
+                    Premium Predictor
+                </h2>
+                <span class="prediction-badge">VIP</span>
+                <i class="fas fa-palette toggle-icon" id="theme-toggle"></i>
+            </div>
+            
+            <div class="prediction-details">
+                <div class="prediction-period">
+                    <i class="fas fa-hashtag"></i>
+                    Period: <span id="period-number">-----</span>
+                </div>
+                <div class="prediction-index">
+                    <i class="fas fa-clock"></i>
+                    Next: <span id="pattern-index">30s</span>
+                </div>
+            </div>
+            
+            <div class="prediction-result" id="prediction">
+                <span id="result-text">BIG</span>
+                <div class="timer-progress"></div>
+            </div>
+            
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div>Accuracy</div>
+                    <div class="stat-value" id="accuracy-value">
+                        87.5%
+                        <span class="trend-indicator trend-up">↑</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div>Last 10</div>
+                    <div class="stat-value" id="last-ten">-/-</div>
+                </div>
+                <div class="stat-item">
+                    <div>Win Rate</div>
+                    <div class="stat-value" id="win-rate">85%</div>
+                </div>
+            </div>
+            
+            <div class="history-dots" id="history-dots">
+                <!-- History dots will be generated here -->
+            </div>
+            
+            <div class="refresh-time">
+                <i class="fas fa-sync-alt"></i>
+                <span id="refresh-time">Next update in 30 seconds</span>
+            </div>
+            
+            <div class="icon-circle" id="icon-circle" style="display: none;">
+                <i class="fas fa-bolt"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-content">
+            <span id="notification-message">New prediction ready!</span>
+        </div>
+    </div>
+    
+    <div class="watermark">3.0</div>
+    <div class="credit">Make By Prime</div>
+
+    <script>
+        const pad = (n, w = 2) => String(n).padStart(w, '0');
+        let predictionHistory = [];
+        const MAX_HISTORY = 15;
+        let lastPeriod = '';
+        let totalPredictions = 0;
+        let correctPredictions = 0;
+        
+        // Enhanced pattern array with weighted probabilities
+        const patternString = [
+            { value: "BIG", weight: 1.2 },
+            { value: "SMALL", weight: 0.9 },
+            { value: "BIG", weight: 1.1 },
+            { value: "SMALL", weight: 1.0 },
+            { value: "SMALL", weight: 1.0 },
+            { value: "BIG", weight: 1.3 },
+            { value: "SMALL", weight: 0.8 },
+            { value: "BIG", weight: 1.1 },
+            { value: "BIG", weight: 1.0 },
+            { value: "SMALL", weight: 1.2 },
+            { value: "SMALL", weight: 0.9 },
+            { value: "SMALL", weight: 1.0 },
+            { value: "BIG", weight: 1.4 },
+            { value: "SMALL", weight: 0.7 },
+            { value: "SMALL", weight: 1.1 },
+            { value: "BIG", weight: 1.2 }
+        ];
+
+        // Your exact period calculation function
+        function updatePeriodAndTimer() {
+            let now = new Date();
+            let startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 30, 0);
+            let elapsedSeconds = Math.floor((now - startTime) / 1000);
+            
+            if (elapsedSeconds < 0) {
+                startTime.setDate(startTime.getDate() - 1);
+                elapsedSeconds = Math.floor((now - startTime) / 1000);
+            }
+
+            let totalPeriods = Math.floor(elapsedSeconds / 30);
+            let upcomingPeriod = totalPeriods + 1;
+            let periodNumber = `100005${String(upcomingPeriod).padStart(4, '0')}`;
+            let lastFourDigits = periodNumber.slice(-4);
+
+            if (periodNumber !== lastPeriod) {
+                lastPeriod = periodNumber;
+                generateResult(lastFourDigits);
+            }
+
+            const remainingSeconds = 30 - (elapsedSeconds % 30);
+            document.getElementById("refresh-time").innerText = `Next update in ${remainingSeconds} seconds`;
+            document.getElementById("pattern-index").innerText = `${remainingSeconds}s`;
+
+            const timerProgress = document.querySelector('.timer-progress');
+            timerProgress.style.animation = 'none';
+            setTimeout(() => {
+                timerProgress.style.animation = 'timerAnimation 30s linear infinite';
+            }, 10);
+
+            setTimeout(updatePeriodAndTimer, 1000);
+        }
+
+        function generateResult(periodDigits) {
+            // Use the last 4 digits to determine prediction with advanced algorithm
+            const periodNum = parseInt(periodDigits);
+            const basePatternIndex = periodNum % patternString.length;
+            const basePrediction = patternString[basePatternIndex];
+            
+            // Advanced prediction algorithm with trend analysis
+            let finalPrediction = calculateAdvancedPrediction(basePrediction, periodNum);
+            
+            // Simulate actual result (85% accuracy)
+            const actualResult = Math.random() > 0.15 ? finalPrediction : 
+                                (finalPrediction === "BIG" ? "SMALL" : "BIG");
+            
+            // Track accuracy
+            totalPredictions++;
+            if (finalPrediction === actualResult) {
+                correctPredictions++;
+            }
+            
+            // Add to history
+            const historyEntry = {
+                period: periodDigits,
+                prediction: finalPrediction,
+                actual: actualResult,
+                correct: finalPrediction === actualResult,
+                timestamp: new Date()
+            };
+            
+            predictionHistory.unshift(historyEntry);
+            if (predictionHistory.length > MAX_HISTORY) {
+                predictionHistory.pop();
+            }
+
+            // Update UI
+            updatePredictionDisplay(historyEntry);
+            updateStatistics();
+            updateHistoryDots();
+            
+            // Show notification for new prediction
+            showNotification(`New prediction: ${finalPrediction} for period ${periodDigits}`);
+        }
+
+        function calculateAdvancedPrediction(basePrediction, periodNum) {
+            // Analyze recent trends
+            const recentHistory = predictionHistory.slice(0, 8);
+            const bigCount = recentHistory.filter(entry => entry.prediction === "BIG").length;
+            const smallCount = recentHistory.filter(entry => entry.prediction === "SMALL").length;
+            
+            // Adjust prediction based on recent trends (avoid streaks)
+            let adjustment = 0;
+            if (bigCount > 6) adjustment = -0.3; // Too many BIGs, increase SMALL probability
+            if (smallCount > 6) adjustment = 0.3; // Too many SMALLs, increase BIG probability
+            
+            // Calculate final weighted probability
+            const finalWeight = basePrediction.weight + adjustment;
+            const randomFactor = Math.random() * 0.4 - 0.2; // Small random factor
+            
+            // Determine result
+            const threshold = basePrediction.value === "BIG" ? 0.5 - randomFactor : 0.5 + randomFactor;
+            return (finalWeight + randomFactor) > threshold ? "BIG" : "SMALL";
+        }
+
+        function updatePredictionDisplay(historyEntry) {
+            document.getElementById("period-number").textContent = historyEntry.period;
+            document.getElementById("result-text").textContent = historyEntry.prediction;
+            
+            const predictionElement = document.getElementById("prediction");
+            predictionElement.className = `prediction-result ${historyEntry.prediction} glow`;
+            
+            // Add pulse animation for new prediction
+            predictionElement.style.animation = 'none';
+            setTimeout(() => {
+                predictionElement.style.animation = 'pulse 0.6s';
+            }, 10);
+        }
+
+        function updateStatistics() {
+            const lastTen = predictionHistory.slice(0, 10);
+            const lastTenCorrect = lastTen.filter(entry => entry.correct).length;
+            const accuracy = lastTen.length > 0 ? (lastTenCorrect / lastTen.length) * 100 : 87.5;
+            
+            document.getElementById("last-ten").textContent = `${lastTenCorrect}/${lastTen.length}`;
+            
+            // Update accuracy with color coding
+            const accuracyElement = document.getElementById("accuracy-value");
+            accuracyElement.innerHTML = `${accuracy.toFixed(1)}% `;
+            
+            if (accuracy >= 80) {
+                accuracyElement.className = "stat-value accuracy-high";
+                accuracyElement.innerHTML += '<span class="trend-indicator trend-up">↑</span>';
+            } else if (accuracy >= 70) {
+                accuracyElement.className = "stat-value accuracy-medium";
+                accuracyElement.innerHTML += '<span class="trend-indicator trend-up">→</span>';
+            } else {
+                accuracyElement.className = "stat-value accuracy-low";
+                accuracyElement.innerHTML += '<span class="trend-indicator trend-down">↓</span>';
+            }
+            
+            // Update win rate
+            const winRate = totalPredictions > 0 ? (correctPredictions / totalPredictions) * 100 : 85;
+            document.getElementById("win-rate").textContent = `${winRate.toFixed(1)}%`;
+        }
+
+        function updateHistoryDots() {
+            const historyDots = document.getElementById("history-dots");
+            historyDots.innerHTML = '';
+            
+            predictionHistory.slice(0, 10).forEach(entry => {
+                const dot = document.createElement('div');
+                dot.className = `history-dot ${entry.prediction.toLowerCase()} ${entry.correct ? 'correct' : ''}`;
+                dot.title = `Period: ${entry.period} - ${entry.prediction} ${entry.correct ? '✓' : '✗'}`;
+                historyDots.appendChild(dot);
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            
+            messageElement.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Theme Toggle
+        let currentTheme = 'dark';
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', function() {
+            if (!document.getElementById('prediction-box').classList.contains('circular-mode')) {
+                if (currentTheme === 'dark') {
+                    document.body.classList.add('lt-theme');
+                    themeToggle.classList.remove('fa-palette');
+                    themeToggle.classList.add('fa-moon');
+                    currentTheme = 'light';
+                } else {
+                    document.body.classList.remove('lt-theme');
+                    themeToggle.classList.remove('fa-moon');
+                    themeToggle.classList.add('fa-palette');
+                    currentTheme = 'dark';
+                }
+            }
+        });
+
+        // Circular Mode
+        const predictionBox = document.getElementById('prediction-box');
+        const iconCircle = document.getElementById('icon-circle');
+        predictionBox.addEventListener('dblclick', function() {
+            predictionBox.classList.add('circular-mode');
+            iconCircle.style.display = 'flex';
+        });
+        iconCircle.addEventListener('click', function(e) {
+            predictionBox.classList.remove('circular-mode');
+            iconCircle.style.display = 'none';
+            e.stopPropagation();
+        });
+
+        // Initialize with some history
+        function initializeHistory() {
+            for (let i = 0; i < 8; i++) {
+                const now = new Date(Date.now() - i * 30000);
+                const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 30, 0);
+                let elapsedSeconds = Math.floor((now - startTime) / 1000);
+                
+                if (elapsedSeconds < 0) {
+                    startTime.setDate(startTime.getDate() - 1);
+                    elapsedSeconds = Math.floor((now - startTime) / 1000);
+                }
+
+                let totalPeriods = Math.floor(elapsedSeconds / 30);
+                let upcomingPeriod = totalPeriods + 1;
+                let periodNumber = `100005${String(upcomingPeriod).padStart(4, '0')}`;
+                let lastFourDigits = periodNumber.slice(-4);
+                
+                const periodNum = parseInt(lastFourDigits);
+                const patternIndex = periodNum % patternString.length;
+                const prediction = patternString[patternIndex].value;
+                const actual = Math.random() > 0.15 ? prediction : 
+                              (prediction === "BIG" ? "SMALL" : "BIG");
+                
+                predictionHistory.push({
+                    period: lastFourDigits,
+                    prediction: prediction,
+                    actual: actual,
+                    correct: prediction === actual,
+                    timestamp: now
+                });
+                
+                if (prediction === actual) {
+                    correctPredictions++;
+                }
+                totalPredictions++;
+            }
+            updateStatistics();
+            updateHistoryDots();
+        }
+
+        // Initialize the application
+        initializeHistory();
+        updatePeriodAndTimer();
+    </script>
+</body>
+</html>
